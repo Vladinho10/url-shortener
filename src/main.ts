@@ -1,11 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { port, swagger } from './configs';
 import { SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app: INestApplication = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe());
+
   app.setGlobalPrefix('v1');
 
   // app.enableVersioning({
