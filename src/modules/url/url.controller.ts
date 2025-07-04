@@ -3,11 +3,11 @@ import { UrlService } from './url.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { Response } from 'express';
 
-@Controller()
+@Controller('urls')
 export class UrlController {
   constructor(private readonly urlService: UrlService) {}
 
-  @Post('shorten')
+  @Post()
   async create(@Body() createUrlDto: CreateUrlDto) {
     const url = await this.urlService.create(createUrlDto);
     return {
@@ -26,7 +26,7 @@ export class UrlController {
     }
   }
 
-  @Get('api/urls')
+  @Get()
   async findAll() {
     return this.urlService.findAll();
   }

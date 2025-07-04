@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>URL Shortener</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+  }
+  .container {
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 100%;
+  }
+  input[type="text"] {
+    width: calc(100% - 10px);
+    padding: 5px;
+    margin-bottom: 10px;
+  }
+  .button {
+    padding: 8px 15px;
+    background: #6b5bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  .button:disabled {
+    background: #ccc;
+  }
+  .error {
+    color: red;
+    font-size: 0.9em;
+  }
+  .success {
+    color: green;
+  }
+  .short-url {
+    margin-top: 10px;
+  }
+  .loading {
+    color: #666;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h3>URL Shortener</h3>
+  <form id="url-form">
+    <label>Enter the URL to shorten:</label><br>
+    <input type="text" id="url-input" placeholder="https://example.com" required><br>
+    <label>Optional custom slug:</label><br>
+    <input type="text" id="slug-input" placeholder="custom-slug"><br>
+    <button type="submit" class="button" id="submit-btn">Shorten</button>
+    <div id="error" class="error"></div>
+  </form>
+  <div id="result" class="short-url"></div>
+</div>
+
+<script>
+const form = document.getElementById("url-form");
+const urlInput = document.getElementById("url-input");
+const slugInput = document.getElementById("slug-input");
+const errorDiv = document.getElementById("error");
+const resultDiv = document.getElementById("result");
+const submitBtn = document.getElementById("submit-btn");
+
+function isValidURL(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;  
+  }
+}
+
+async function shortenUrl(url, slug = '') {
+  try {
+    submitBtn.disabled = true;
+    resultDiv.innerHTML = '<div class="loading">Shortening URL...</div>';
+    
+    const response = await fetch('/v1/urls', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        originalUrl: url,
+        slug: slug || undefined
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to shorten URL');
+    }
+
+    const data = await response.json();
+    return data.shortUrl;
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorDiv.textContent = "";
+  resultDiv.textContent = "";
+
+  const url = urlInput.value.trim();
+  const slug = slugInput.value.trim();
+
+  if (!isValidURL(url)) {
+    errorDiv.textContent = "Invalid URL. Please enter a valid one.";
+    return;
+  }
+
+  try {
+    const shortUrl = await shortenUrl(url, slug);
+    
+    resultDiv.innerHTML = `
+      <div class="success">Success! Here's your short URL:</div>
+      <a href="${shortUrl}" target="_blank">${shortUrl}</a>
+      <button class="button" id="copy-btn">Copy</button>
+    `;
+
+    document.getElementById("copy-btn").addEventListener("click", () => {
+      navigator.clipboard.writeText(shortUrl);
+      alert("Short URL copied to clipboard!");
+    });
+  } catch (error) {
+    errorDiv.textContent = error.message;
+    resultDiv.textContent = "";
+  }
+});
+</script>
+</body>
+</html>
