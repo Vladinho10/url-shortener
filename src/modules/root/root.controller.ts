@@ -12,7 +12,7 @@ export class RootController {
     return {};
   }
 
-  @Get('register')
+  @Get()
   @Render('register')
   registerPage() {
     return {};
@@ -23,11 +23,5 @@ export class RootController {
   @Render('dashboard')
   dashboard() {
     return {};
-  }
-
-  @Get()
-  @Render('index')
-  getHello() {
-    console.log('Rendering index page');
   }
 }

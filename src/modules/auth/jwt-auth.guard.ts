@@ -30,7 +30,10 @@ export class JwtAuthGuard implements CanActivate {
       }
 
       // Attach user to request
-      request.user = payload;
+      request.user = {
+        id: user.id,
+        email: user.email,
+      };
     } catch {
       throw new UnauthorizedException('Invalid token');
     }

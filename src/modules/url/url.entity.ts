@@ -1,5 +1,5 @@
 import { IsString, IsUrl } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 
 @Entity()
@@ -19,5 +19,9 @@ export class Url {
   clicks: number;
 
   @ManyToOne(() => User, user => user.urls)
+  @JoinColumn({ name: 'userId' }) // Explicit column name
   user: User;
+
+  @Column() // Add this column
+  userId: number;
 }
