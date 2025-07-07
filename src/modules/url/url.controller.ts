@@ -3,12 +3,14 @@ import { UrlService } from './url.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('urls')
 export class UrlController {
   constructor(private readonly urlService: UrlService) {}
 
   @Post()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async create(@Body() createUrlDto: CreateUrlDto) {
     const url = await this.urlService.create(createUrlDto);
     return {
