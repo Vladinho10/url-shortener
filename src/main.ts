@@ -9,7 +9,12 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors();
+  app.enableCors({
+    allowedHeaders: ['Authorization', 'Content-Type'],
+    exposedHeaders: ['Authorization'],
+    origin: true,
+    credentials: true
+  });
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
 

@@ -1,23 +1,31 @@
-# to run the app in container using local postgres, run the following commands
-# 1. build the image
-# docker build -t nest_js_pride_img .
-# 2. create the container from image
-# docker run --name nest_js_pride_cont -e DB_PORT=5432 -e DB_HOST=docker.for.mac.host.internal -p 5001:5000 -d nest_js_pride_img
+# Stage 1: Build the application
+FROM node:20.18.1-alpine AS builder
 
-FROM node:16.16-alpine
+WORKDIR /app
 
-# Create app directory
-WORKDIR /pride-v
+# Verify yarn version and update if needed (instead of reinstalling)
+RUN yarn --version && \
+    if [ "$(yarn --version)" != "1.22.22" ]; then \
+      npm install -g yarn@1.22.22 --force; \
+    fi
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+# Copy package files first for better caching
+COPY package.json yarn.lock ./
 
-RUN npm install
+# Install all dependencies
+RUN yarn
 
-# Bundle app source
+# Copy source files
 COPY . .
 
-# run node index.js in container
-CMD [ "npm", "start" ]
+# Build the application
+RUN yarn run build
+
+# Copy production environment file
+COPY ./src/envs/.env.production .env
+
+EXPOSE 4000
+
+RUN ls -la /app/dist
+
+CMD ["node", "dist/src/main.js"]

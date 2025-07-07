@@ -48,9 +48,13 @@ export class AuthController {
         });
       }
 
+      console.log('beginning of register', {existingUser});
+      
       const user = await this.authService.register(registerDto.email, registerDto.password);
       const token = await this.authService.login(user);
 
+      console.log('user and token in auth ctrl', {user, token});
+      
       return res.status(HttpStatus.CREATED).json({
         access_token: token.access_token,
         user: {

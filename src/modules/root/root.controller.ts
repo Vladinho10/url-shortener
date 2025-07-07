@@ -1,6 +1,8 @@
-import { Controller, Get, Render, UseGuards } from '@nestjs/common';
+import { Controller, Get, Render, Req, UseGuards } from '@nestjs/common';
 import { RootService } from './root.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { port } from 'src/configs';
+import { RequestWithUser } from '../auth/request-with-user.interface';
 
 @Controller()
 export class RootController {
@@ -9,19 +11,18 @@ export class RootController {
   @Get('login')
   @Render('login')
   loginPage() {
-    return {};
+    return { port };
   }
 
   @Get()
   @Render('register')
   registerPage() {
-    return {};
+    return { port };
   }
 
   @Get('dashboard')
-  @UseGuards(JwtAuthGuard)
   @Render('dashboard')
   dashboard() {
-    return {};
+    return { port };
   }
 }

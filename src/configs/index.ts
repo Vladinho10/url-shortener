@@ -7,4 +7,5 @@ import DocumentBuilder from './swagger';
 
 export const db = database;
 export const port = process.env.PORT;
+export const jwt_secret = process.env.JWT_SECRET;
 export const swagger = DocumentBuilder;

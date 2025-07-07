@@ -72,7 +72,10 @@
 
   <script>
     // Authentication check
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');    
+
+    // console.log('token in dashboard', token);
+    
     if (!token) window.location.href = '/login';
 
     // DOM elements
@@ -106,7 +109,7 @@
           <tr data-id="${url.id}">
             <td><a href="${url.originalUrl}" target="_blank">${url.originalUrl}</a></td>
             <td class="slug-cell">
-              <a href="/${url.slug}" target="_blank" class="slug-link">${window.location.host}/${url.slug}</a>
+              <a href="${url.originalUrl}" target="_blank" class="slug-link">${window.location.host}/${url.slug}</a>
               <input type="text" value="${url.slug}" class="slug-edit" style="display: none;">
               <button class="edit-slug-btn">Edit</button>
               <button class="save-slug-btn" style="display: none;">Save</button>

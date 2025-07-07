@@ -1,3 +1,8 @@
 node_modules
 dist
-.idea
+.git
+.gitignore
+*.md
+docker-compose.yml
+Dockerfile
+.env*.local

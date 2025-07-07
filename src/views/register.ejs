@@ -73,7 +73,7 @@
     <form id="register-form">
       <input type="email" id="email" placeholder="Email" required>
       <input type="password" id="password" placeholder="Password (min 8 characters)" required minlength="6">
-      <input type="password" id="confirm-password" placeholder="Confirm Password" required>
+      <!-- <input type="password" id="confirm-password" placeholder="Confirm Password" required> -->
       <div id="error" class="error"></div>
       <button type="submit" id="register-btn">Register</button>
     </form>
@@ -86,7 +86,7 @@
     const form = document.getElementById('register-form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirm-password');
+    // const confirmPasswordInput = document.getElementById('confirm-password');
     const errorDiv = document.getElementById('error');
     const registerBtn = document.getElementById('register-btn');
 
@@ -97,14 +97,14 @@
 
       const email = emailInput.value.trim();
       const password = passwordInput.value;
-      const confirmPassword = confirmPasswordInput.value;
+      // const confirmPassword = confirmPasswordInput.value;
 
       // Client-side validation
-      if (password !== confirmPassword) {
-        errorDiv.textContent = 'Passwords do not match';
-        registerBtn.disabled = false;
-        return;
-      }
+      // if (password !== confirmPassword) {
+      //   errorDiv.textContent = 'Passwords do not match';
+      //   registerBtn.disabled = false;
+      //   return;
+      // }
 
       if (password.length < 8) {
         errorDiv.textContent = 'Password must be at least 8 characters';
@@ -113,7 +113,7 @@
       }
 
       try {
-        const response = await fetch('http://localhost:4000/v1/auth/register', {
+        const response = await fetch('http://localhost:<%= port %>/v1/auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -127,18 +127,21 @@
         }
 
         const { access_token, user } = await response.json();
-        
+                
         // Store token and redirect to dashboard
+        localStorage.removeItem('token');
         localStorage.setItem('token', access_token);
         window.location.href = '/dashboard';
       } catch (error) {
+        console.log('error', error.message);
+        
         errorDiv.textContent = error.message;
         registerBtn.disabled = false;
       }
     });
 
     // Basic input validation
-    [emailInput, passwordInput, confirmPasswordInput].forEach(input => {
+    [emailInput, passwordInput].forEach(input => {
       input.addEventListener('input', () => {
         if (errorDiv.textContent) {
           errorDiv.textContent = '';
