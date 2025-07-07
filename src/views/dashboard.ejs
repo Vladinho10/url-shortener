@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>URL Shortener Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background-color: #f5f5f5; }
+    .chart-container { height: 300px; margin-top: 20px; }
+    .logout-btn { background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Your Dashboard</h1>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+
+    <div class="card">
+      <h2>Shorten a New URL</h2>
+      <form id="url-form">
+        <input type="text" id="url-input" placeholder="Enter URL to shorten" required style="width: 60%; padding: 8px;">
+        <input type="text" id="slug-input" placeholder="Custom slug (optional)" style="width: 30%; padding: 8px;">
+        <button type="submit" style="padding: 8px 16px; background: #4CAF50; color: white; border: none; cursor: pointer;">Shorten</button>
+      </form>
+      <div id="error" style="color: red; margin-top: 10px;"></div>
+      <div id="result" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Your URLs</h2>
+      <table id="urls-table">
+        <thead>
+          <tr>
+            <th>Original URL</th>
+            <th>Short URL</th>
+            <th>Clicks</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Popular URLs</h2>
+      <div class="chart-container">
+        <canvas id="popular-urls-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Authentication check
+    const token = localStorage.getItem('token');
+
+    if (!token) window.location.href = '/login';
+
+    // DOM elements
+    const logoutBtn = document.getElementById('logout-btn');
+    const urlForm = document.getElementById('url-form');
+    const urlInput = document.getElementById('url-input');
+    const slugInput = document.getElementById('slug-input');
+    const errorDiv = document.getElementById('error');
+    const resultDiv = document.getElementById('result');
+    const urlsTable = document.getElementById('urls-table').querySelector('tbody');
+
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    });
+
+    // Load user's URLs
+    async function loadUserUrls() {
+      try {
+        const response = await fetch('/v1/urls', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const urls = await response.json();
+        
+        urlsTable.innerHTML = urls.map(url => `
+          <tr>
+            <td><a href="${url.originalUrl}" target="_blank">${url.originalUrl}</a></td>
+            <td><a href="/${url.slug}" target="_blank">${'http://localhost:3000'}/${url.slug}</a></td>
+            <td>${url.clicks}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Failed to load URLs:', error);
+      }
+    }
+
+    // Load popular URLs chart
+    async function loadPopularUrlsChart() {
+      try {
+        const response = await fetch('/v1/urls/stats/popular', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const urls = await response.json();
+
+        const ctx = document.getElementById('popular-urls-chart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: urls.map(url => url.slug),
+            datasets: [{
+              label: 'Clicks',
+              data: urls.map(url => url.clicks),
+              backgroundColor: 'rgba(75, 192, 192, 0.6)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Failed to load popular URLs:', error);
+      }
+    }
+
+    // Shorten URL
+    urlForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorDiv.textContent = '';
+      resultDiv.textContent = '';
+
+      const url = urlInput.value.trim();
+      const slug = slugInput.value.trim();
+
+      try {
+        const response = await fetch('/v1/urls', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            originalUrl: url,
+            slug: slug || undefined
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to shorten URL');
+        }
+
+        const data = await response.json();
+        resultDiv.innerHTML = `
+          <div style="color: green;">Success! Your short URL: 
+            <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>
+          </div>
+        `;
+        
+        // Refresh the URLs list
+        loadUserUrls();
+        loadPopularUrlsChart();
+      } catch (error) {
+        errorDiv.textContent = error.message;
+      }
+    });
+
+    // Initial load
+    loadUserUrls();
+    loadPopularUrlsChart();
+  </script>
+</body>
+</html>

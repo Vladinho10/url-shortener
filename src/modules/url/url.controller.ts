@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Get, Param, Res } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Res, Req, UseGuards } from '@nestjs/common';
 import { UrlService } from './url.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { Response } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('urls')
 export class UrlController {
@@ -29,5 +30,12 @@ export class UrlController {
   @Get()
   async findAll() {
     return this.urlService.findAll();
+  }
+
+  @Get('stats/popular')
+  @UseGuards(JwtAuthGuard)
+  async getPopularUrls(@Req() req: Request) {
+    const userId = (req as any).user.id;
+    return this.urlService.getPopularUrls(userId);
   }
 }

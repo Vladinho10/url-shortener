@@ -1,5 +1,6 @@
 import { IsString, IsUrl } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from '../users/entities/user.entity';
 
 @Entity()
 export class Url {
@@ -13,4 +14,10 @@ export class Url {
 
   @Column({ type: 'varchar', unique: true, length: 50 })
   slug: string;
+
+  @Column({ default: 0 })
+  clicks: number;
+
+  @ManyToOne(() => User, user => user.urls)
+  user: User;
 }

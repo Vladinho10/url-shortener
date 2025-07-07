@@ -47,4 +47,7 @@ export class UrlService {
     }
     return slug;
   }
+
+  async getPopularUrls(userId: number) {
+return this.urlRepository.find({ where: { user: { id: userId } } });  }
 }

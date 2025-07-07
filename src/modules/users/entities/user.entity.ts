@@ -1,19 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Url } from 'src/modules/url/url.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  name: string;
-
-  @Column()
-  age: number;
-
-  @Column()
+  @Column({unique: true})
   email: string;
 
-  @Column({ default: false })
-  isActive: boolean;
+  @Column()
+  password: string;
+
+  @OneToMany(() => Url, url => url.user)
+  urls: Url[];
 }
